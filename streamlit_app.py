@@ -82,7 +82,8 @@ def main():
         st.write("1. Click Start to open your camera and give permission for prediction")
         st.write("2. This will predict your emotion.")
         st.write("3. When you done, click stop to end.")
-        webrtc_streamer(key="example", video_processor_factory=VideoTransformer)
+        webrtc_streamer(key="example", video_processor_factory=VideoTransformer,media_stream_constraints={"video": True, "audio": False}
+)
 
     # About.
     elif choice == "About":
