@@ -6,12 +6,12 @@ import streamlit as st
 from tensorflow import keras
 from tensorflow.keras.preprocessing.image import img_to_array
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, VideoProcessorBase, WebRtcMode
-
+import db_connect
 # Define the emotions.
 emotion_labels = ['Angry','Disgust','Fear','Happy','Neutral', 'Sad', 'Surprise']
-
 # Load model.
 classifier =load_model('model_78.h5')
+conn=db_connect.connect_to_supabase()
 
 # load weights into new model
 classifier.load_weights("model_weights_78.h5")
@@ -82,9 +82,11 @@ def main():
         st.write("1. Click Start to open your camera and give permission for prediction")
         st.write("2. This will predict your emotion.")
         st.write("3. When you done, click stop to end.")
-        webrtc_streamer(key="example", video_processor_factory=VideoTransformer,media_stream_constraints={"video": True, "audio": False}
-)
-
+        webrtc_streamer(
+            key="example",
+            video_processor_factory=VideoTransformer,
+            media_stream_constraints={"video": True, "audio": False}
+        )
     # About.
     elif choice == "About":
         st.subheader("About this app")
