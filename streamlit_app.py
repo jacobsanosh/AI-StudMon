@@ -1,10 +1,11 @@
+# import the required libraries
 import numpy as np
 import cv2
 import face_recognition
 import os
 from keras.models import load_model
 import streamlit as st
-from PIL import Image
+from PIL import Image, ImageDraw
 
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
@@ -97,9 +98,12 @@ def main():
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
                 cv2.putText(frame, f'{name} {predicted_emotion}', (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
-            # st.image(frame, channels="BGR", use_column_width=True)
+            cv2.imshow('Face Detection, Emotion Detection, and Recognition', frame)
+            if cv2.waitKey(5) & 0xFF == 27:
+                break
 
         cap.release()
+        cv2.destroyAllWindows()
 
     # About
     elif choice == "About":
@@ -114,5 +118,5 @@ def main():
                                     </br>"""
         st.markdown(html_temp_about1, unsafe_allow_html=True)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
