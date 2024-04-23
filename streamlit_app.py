@@ -27,7 +27,7 @@ except Exception:
     st.write("Error loading cascade classifiers")
 
 # Define the directory containing student images
-directory = "./Students"
+directory = "./students"
 known_face_encodings = []
 known_face_names = []
 
