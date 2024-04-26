@@ -91,23 +91,42 @@ def insert_data_into_table(table_name, student_name, emotion, timestamp):
 
 def main():
     # Face Analysis Application
-    st.title("AI based student monitoring system")
-    activities = ["Home", "Live Face Emotion Detection", "About"]
-    choice = st.sidebar.selectbox("Select Activity", activities)
+    st.markdown("<h1 style='text-align: center; color: white; line-height: 0.5;'>🤖</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: orange;  line-height: 0;'>Studmon.ai</h1>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; color: white; font-weight: lighter;'>AI Based Student Monitoring System</h4>", unsafe_allow_html=True)
+
+    activities = ["Home", "Live Face Emotion Detection", "Dashboard", "About Us"]
+    choice = st.sidebar.radio("Select Activity:", activities)
 
     # Homepage
     if choice == "Home":
-        html_temp_home1 = """<div style="background-color:#FC4C02;padding:0.5px">
+
+        # html_temp_home1 = """</br></br>
+        #                      <div style="background-color:#FC4C02;padding:0.5px">
+        #                      <h4 style="color:white;text-align:center;">
+        #                      Start Your Real Time Face Emotion Detection.
+        #                      </h4>
+        #                      </div>
+        #                      </br>"""
+        
+        html_temp_home1 = """<hr></br> 
+                             <div style="display:flex; flex-direction: column; align-items: center;">
+                             <p style='text-align: center; color: white; font-family: Courier; font-weight: lighter;'>Experience the future of education with our AI-enhanced student monitoring and understanding assessment system. Personalize learning, improve academic outcomes, and optimize resource allocation...✨</p>
+                             </br>
+                             <p style='text-align: center; color: white; font-family: Courier; font-weight: lighter;'>📊 Assess how well students understand their lessons💡& </br>how they're feeling 😊.</p>
+                             </br>
+                             <div style="background-color:#FC9C01;padding:0.5px;">
                              <h4 style="color:white;text-align:center;">
-                             Start Your Real Time Face Emotion Detection.
+                             Start Emotion Detection. 
                              </h4>
                              </div>
+                             <div>
                              </br>"""
         st.markdown(html_temp_home1, unsafe_allow_html=True)
-        st.write("""
-        1. Click the dropdown list in the top left corner and select Live Face Emotion Detection.
-        2. This takes you to a page which will tell if it recognizes your emotions.
-        """)
+        # st.write("""
+        # 1. Click the dropdown list in the top left corner and select Live Face Emotion Detection.
+        # 2. This takes you to a page which will tell if it recognizes your emotions.
+        # """)
 
     # Live Face Emotion Detection
     elif choice == "Live Face Emotion Detection":
@@ -168,9 +187,22 @@ def main():
           cv2.destroyAllWindows()
     if connection:
          cur.close()
-         conn.close()      
+         conn.close()    
+
+    # Dashboard
+    elif choice == "Dashboard":
+        st.subheader("Dashboard")
+        html_temp_about1 = """<div style="background-color:#36454F;padding:30px">
+                                    <h4 style="color:white;">
+                                     This app predicts facial emotion using a Convolutional neural network.
+                                     Which is built using Keras and Tensorflow libraries.
+                                     Face detection is achieved through face_recognition library.
+                                    </h4>
+                                    </div>
+                                    </br>"""
+        st.markdown(html_temp_about1, unsafe_allow_html=True)
     # About
-    elif choice == "About":
+    elif choice == "About Us":
         st.subheader("About this app")
         html_temp_about1 = """<div style="background-color:#36454F;padding:30px">
                                     <h4 style="color:white;">
@@ -181,6 +213,8 @@ def main():
                                     </div>
                                     </br>"""
         st.markdown(html_temp_about1, unsafe_allow_html=True)
+    
+    
 
 if __name__ == "__main__":
     main()
