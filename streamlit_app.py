@@ -122,7 +122,7 @@ def main():
           create_table_if_not_exists(table_name)
           cap = cv2.VideoCapture(0)
           start_time = datetime.now()
-
+          faces_data=[]
           while cap.isOpened():
             success, frame = cap.read()
             if not success:
@@ -135,7 +135,7 @@ def main():
                 for (x, y, w, h) in faces:
                     cv2.rectangle(img=frame, pt1=(x, y), pt2=(
                         x + w, y + h), color=(0, 255, 255), thickness=2)
-                    roi_gray = img_gray[y:y + h, x:x + w]
+                    roi_gray = img_gray[y:y + h , x:x + w]
                     roi_gray = cv2.resize(roi_gray, (48, 48), interpolation=cv2.INTER_AREA)
                     if np.sum([roi_gray]) != 0:
                         roi = roi_gray.astype('float') / 255.0
@@ -146,16 +146,20 @@ def main():
                         finalout = emotion_labels[maxindex]
                         output = str(finalout)
                     label_position = (x, y-10)
-                    name=facerec(frame[y:y+h, x:x+w])  
+                    name=facerec(frame[y:y+h +4, x:x+w])  
                     
                     cv2.putText(frame, f'{output}{name} ', label_position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),2)
                     if (datetime.now() - start_time).seconds >= 15:
-                        insert_data_into_table(table_name, name, output, datetime.now())
-                        start_time = datetime.now()
+                        faces_data.append((name, output, datetime.now()))
 
                 # cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
                 # cv2.putText(frame, f'{name} {predicted_emotion}', (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-
+                if (datetime.now() - start_time).seconds >= 15:
+                    for data in faces_data:
+                        name, output, timestamp = data
+                        insert_data_into_table(table_name, name, output, timestamp)
+                    faces_data=[]    
+                    start_time=datetime.now()
             cv2.imshow('Face Detection, Emotion Detection, and Recognition', frame)
             if cv2.waitKey(5) & 0xFF == 27:
                 break
