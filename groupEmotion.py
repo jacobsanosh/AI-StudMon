@@ -1,17 +1,17 @@
 import db_connect
 import collections
-
+from datetime import datetime, timedelta
 connection = db_connect.connect_to_supabase()
 cur = connection[0]
 conn = connection[1]
 
-def processingEmotion(tname):
+def processingEmotion(tname,end_time):
     try:
         student = collections.defaultdict(list)
-
-        # Execute SQL query to fetch data from the database
-        query = f"SELECT student_name, emotion FROM {tname}"
-        cur.execute(query)
+        start_time = end_time = start_time - timedelta(minutes=10)
+        # Execute SQL query to fetch data from the database within the specified time interval
+        query = f"SELECT student_name, emotion FROM {tname} WHERE timestamp BETWEEN %s AND %s"
+        cur.execute(query, (start_time, end_time))
 
         # Fetch all rows from the result set
         rows = cur.fetchall()
@@ -55,4 +55,8 @@ def processingEmotion(tname):
     except Exception as e:
         print("Error fetching data:", e)
 
-processingEmotion("class_20240426_091949")
+#for checking
+
+# start_time = datetime.strptime("2024-04-26 21:44:30", "%Y-%m-%d %H:%M:%S")
+# end_time = start_time + timedelta(minutes=10)
+# processingEmotion("class_20240426_091949",start_time,end_time)
