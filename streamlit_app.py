@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
-import groupEmotion
+import groupEmotion,dashboard,analytics
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
@@ -149,7 +149,7 @@ def main():
                 print("Ignoring empty camera frame.")
                 continue
             else:
-                if (datetime.now() - start_time).seconds >= 2:
+                if (datetime.now() - start_time).seconds >= 15:
                     img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     faces = face_cascade.detectMultiScale(
                     image=img_gray, scaleFactor=1.3, minNeighbors=5)
@@ -179,7 +179,7 @@ def main():
                         faces_data=[]    
                     start_time=datetime.now()
                 #for processing
-                if (datetime.now() - procssingTime).seconds >= 3:
+                if (datetime.now() - procssingTime).seconds >= 45:
                     groupEmotion.processingEmotion(table_name,datetime.now())
                     procssingTime=datetime.now()
                 
@@ -189,36 +189,48 @@ def main():
 
           cap.release()
           cv2.destroyAllWindows()
-    if connection:
-         cur.close()
-         conn.close()    
+  
 
-    # Dashboard
+ # Dashboard
     elif choice == "Dashboard":
-        st.subheader("Dashboard")
-        html_temp_about1 = """<div style="background-color:#36454F;padding:30px">
-                                    <h4 style="color:white;">
-                                     This app predicts facial emotion using a Convolutional neural network.
-                                     Which is built using Keras and Tensorflow libraries.
-                                     Face detection is achieved through face_recognition library.
-                                    </h4>
-                                    </div>
-                                    </br>"""
-        st.markdown(html_temp_about1, unsafe_allow_html=True)
+        try:
+            st.header("Dashboard")
+            html_temp_about1 = """
+            <div style="background-color:#36454F;padding:30px">
+                <h4 style="color:white;">
+                    This app predicts facial emotion using a Convolutional neural network.
+                    Which is built using Keras and Tensorflow libraries.
+                    Face detection is achieved through face_recognition library.
+                </h4>
+            </div>
+            <br/>"""
+            tables = dashboard.dashboard(cur)
+            for table in tables:
+                st.write(table[0])  # Display table name
+                # Button to derive analytics for the current table
+                if st.button(f"Derive Analytics for {table[0]}"):
+                    analytics.derive_analytics(table[0])
+            st.markdown(html_temp_about1, unsafe_allow_html=True)
+        except Exception as e:
+            st.error(f"Error occurred: {e}")
+
     # About
     elif choice == "About Us":
-        st.subheader("About this app")
-        html_temp_about1 = """<div style="background-color:#36454F;padding:30px">
-                                    <h4 style="color:white;">
-                                     This app predicts facial emotion using a Convolutional neural network.
-                                     Which is built using Keras and Tensorflow libraries.
-                                     Face detection is achieved through face_recognition library.
-                                    </h4>
-                                    </div>
-                                    </br>"""
+        st.header("About this app")
+        html_temp_about1 = """
+        <div style="background-color:#36454F;padding:30px">
+            <h4 style="color:white;">
+                This app predicts facial emotion using a Convolutional neural network.
+                Which is built using Keras and Tensorflow libraries.
+                Face detection is achieved through face_recognition library.
+            </h4>
+        </div>
+        <br/>"""
         st.markdown(html_temp_about1, unsafe_allow_html=True)
-    
     
 
 if __name__ == "__main__":
     main()
+    if connection:
+         cur.close()
+         conn.close()  
