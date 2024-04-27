@@ -141,6 +141,7 @@ def main():
           create_table_if_not_exists(table_name)
           cap = cv2.VideoCapture(0)
           start_time = datetime.now()
+          procssingTime=start_time
           faces_data=[]
           while cap.isOpened():
             success, frame = cap.read()
@@ -172,11 +173,11 @@ def main():
                             faces_data.append((name, output, datetime.now()))
 
                     
-                            for data in faces_data:
-                                name, output, timestamp = data
-                                insert_data_into_table(table_name, name, output, timestamp)
-                            faces_data=[]    
-                            start_time=datetime.now()
+                    for data in faces_data:
+                        name, output, timestamp = data
+                        insert_data_into_table(table_name, name, output, timestamp)
+                        faces_data=[]    
+                    start_time=datetime.now()
                 #for processing
                 if (datetime.now() - procssingTime).seconds >= 3:
                     groupEmotion.processingEmotion(table_name,datetime.now())
