@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
-
+import groupEmotion
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
@@ -181,7 +181,7 @@ def main():
                 #for processing
                 if (datetime.now() - procssingTime).seconds >= 3:
                     groupEmotion.processingEmotion(table_name,datetime.now())
-                    start_time=datetime.now()
+                    procssingTime=datetime.now()
                 
             cv2.imshow('Face Detection, Emotion Detection, and Recognition', frame)
             if cv2.waitKey(5) & 0xFF == 27:
