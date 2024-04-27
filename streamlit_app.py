@@ -225,7 +225,7 @@ def main():
                 st.write(table[0])  # Display table name
                 # Button to derive analytics for the current table
                 if st.button(f"Derive Analytics for {table[0]}"):
-                    analytics.derive_analytics(table[0],cur)
+                    analytics.derive_analytics(table[0])
             st.markdown(html_temp_about1, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error occurred: {e}")
