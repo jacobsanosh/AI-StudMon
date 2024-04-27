@@ -89,7 +89,9 @@ def insert_data_into_table(table_name, student_name, emotion, timestamp):
     except Exception as e:
         print("Error:", e)
 
+
 def main():
+
     # Face Analysis Application
     st.markdown("<h1 style='text-align: center; color: white; line-height: 0.5;'>🤖</h1>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; color: orange;  line-height: 0;'>Studmon.ai</h1>", unsafe_allow_html=True)
@@ -100,15 +102,6 @@ def main():
 
     # Homepage
     if choice == "Home":
-
-        # html_temp_home1 = """</br></br>
-        #                      <div style="background-color:#FC4C02;padding:0.5px">
-        #                      <h4 style="color:white;text-align:center;">
-        #                      Start Your Real Time Face Emotion Detection.
-        #                      </h4>
-        #                      </div>
-        #                      </br>"""
-        
         html_temp_home1 = """<hr></br> 
                              <div style="display:flex; flex-direction: column; align-items: center;">
                              <p style='text-align: center; color: white; font-family: Courier; font-weight: lighter;'>Experience the future of education with our AI-enhanced student monitoring and understanding assessment system. Personalize learning, improve academic outcomes, and optimize resource allocation...✨</p>
@@ -117,25 +110,48 @@ def main():
                              </br>
                              <div style="background-color:#FC9C01;padding:0.5px;">
                              <h4 style="color:white;text-align:center;">
-                             Start Emotion Detection. 
+                             Start Emotion Detection
                              </h4>
                              </div>
                              <div>
                              </br>"""
         st.markdown(html_temp_home1, unsafe_allow_html=True)
-        # st.write("""
-        # 1. Click the dropdown list in the top left corner and select Live Face Emotion Detection.
-        # 2. This takes you to a page which will tell if it recognizes your emotions.
-        # """)
 
     # Live Face Emotion Detection
     elif choice == "Live Face Emotion Detection":
-        st.header("Webcam Live Feed")
-        st.subheader('''
-        Welcome to the other side of the SCREEN!!!
-        * Get ready with all the emotions you can express. 
-        ''')
-        if st.button("Start Class"):
+        # st.header("Webcam Live Feed")
+        # st.subheader('''
+        # Welcome to the other side of the SCREEN!!!
+        # * Get ready with all the emotions you can express. 
+        # ''')
+
+
+        css = """
+            <style>
+            .stButton>button {
+                height: 4rem;
+                margin: 0 auto;
+                font-size: 18px;
+               }
+            </style>
+             """
+        st.markdown(css, unsafe_allow_html=True)
+
+        html_temp_emotion_detection = """
+                                      <hr></br> 
+                                      <div style="display:flex; flex-direction: column; align-items: center;">
+                                        <p style='text-align: center; color: white; font-family: Courier; font-weight: lighter;'>
+                                             Monitor 🤓students' emotions in real-time🔄 during your class sessions.
+                                            <br/>
+                                            Start recording🎥 now to analyze their engagement levels🧠 and understanding💁...
+                                        </p>
+                                      </br>
+                                      </div>
+                                      </br>
+                                      """
+        st.markdown(html_temp_emotion_detection, unsafe_allow_html=True)
+        
+        if st.button("🔴 Start Class", use_container_width=True):
         # Initialize OpenCV video capture
           table_name = "class_" + datetime.now().strftime("%Y%m%d_%H%M%S")
           create_table_if_not_exists(table_name)
@@ -209,25 +225,45 @@ def main():
                 st.write(table[0])  # Display table name
                 # Button to derive analytics for the current table
                 if st.button(f"Derive Analytics for {table[0]}"):
-                    analytics.derive_analytics(table[0])
+                    analytics.derive_analytics(table[0],cur)
             st.markdown(html_temp_about1, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"Error occurred: {e}")
 
     # About
     elif choice == "About Us":
-        st.header("About this app")
+        st.header("Studmon.ai")
         html_temp_about1 = """
         <div style="background-color:#36454F;padding:30px">
-            <h4 style="color:white;">
-                This app predicts facial emotion using a Convolutional neural network.
-                Which is built using Keras and Tensorflow libraries.
-                Face detection is achieved through face_recognition library.
-            </h4>
+            <h6 style="color:white;font-family: Courier; font-weight: lighter;">            
+                🤖Studmon.ai is an AI-based Student Monitoring System designed to assess students' comprehension and emotional states during lessons in real-time. </br></br>It utilizes cutting-edge technology, including facial expression analysis and emotion detection, to provide insights into students' understanding and engagement levels.</br> </br>🧠 Studmon.ai aims to revolutionize education by personalizing learning, improving academic outcomes, and optimizing resource allocation in educational institutions. 🚀
+            </h6>
         </div>
-        <br/>"""
+        <br/>
+        <hr/>
+        <br/>
+        
+
+        """
         st.markdown(html_temp_about1, unsafe_allow_html=True)
+
     
+        features_list = [
+        "🧠 Real-time assessment of students' comprehension and emotional states during lessons",
+        "🔔 Automatic notifications for concept reviews when needed",
+        "🎓 Personalized learning experience",
+        "📈 Improved academic outcomes",
+        "💡 Optimized resource allocation",
+        "🖥️ Robust and user-friendly interface",
+        "📊 Comprehensive reports and analytics for educators and administrators",
+        ]
+    
+        st.markdown("<h3 style='color: orange;'>Key Features:</h3>", unsafe_allow_html=True)
+        st.markdown("<ul>", unsafe_allow_html=True)
+        for feature in features_list:
+            st.markdown(f"<li style='color: white;'>{feature}</li>", unsafe_allow_html=True)
+        st.markdown("</ul><br/><hr/>", unsafe_allow_html=True)
+
 
 if __name__ == "__main__":
     main()
