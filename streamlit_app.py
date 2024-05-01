@@ -196,7 +196,7 @@ def main():
                     start_time=datetime.now()
                 #for processing
                 if (datetime.now() - procssingTime).seconds >= 45:
-                    groupEmotion.processingEmotion(table_name,datetime.now())
+                    groupEmotion.processingEmotion(cur,table_name,datetime.now())
                     procssingTime=datetime.now()
                 
             cv2.imshow('Face Detection, Emotion Detection, and Recognition', frame)

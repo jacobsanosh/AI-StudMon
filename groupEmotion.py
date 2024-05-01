@@ -1,11 +1,11 @@
-import db_connect
+# import db_connect
 import collections
 from datetime import datetime, timedelta
-connection = db_connect.connect_to_supabase()
-cur = connection[0]
-conn = connection[1]
+# connection = db_connect.connect_to_supabase()
+# cur = connection[0]
+# conn = connection[1]
 
-def processingEmotion(tname,end_time):
+def processingEmotion(cur,tname,end_time):
     try:
         student = collections.defaultdict(list)
         start_time = end_time - timedelta(minutes=10)
