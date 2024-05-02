@@ -11,6 +11,17 @@ import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
 import groupEmotion,dashboard,analytics
+
+from supabase_py import create_client
+from graph import derive_graph
+
+# Create a Supabase client
+supabase_url = "https://cmjrimwbnzszaozkkcam.supabase.co"
+supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtanJpbXdibnpzemFvemtrY2FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM4MDQzMTMsImV4cCI6MjAyOTM4MDMxM30.rfkhuoLt3d_zr2xUaDXZ3k9uCPutT-mIAaJUD3E565k"
+supabase = create_client(supabase_url, supabase_key)
+
+
+
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
@@ -94,6 +105,13 @@ def insert_data_into_table(table_name, student_name, emotion, timestamp):
 def main():
     st.set_page_config(layout="wide")
     tables = dashboard.dashboard(cur)
+    emoji_mapping = {
+        'Happy': '😊',
+        'Neutral': '😐',
+        'Fear': '😨',
+        'Sad': '😞',
+        'Surprise': '😮'
+    }
     # Face Analysis Application
     st.markdown("<h1 style='text-align: center; color: white; line-height: 0.5;'>🤖</h1>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; color: orange;  line-height: 0;'>Studmon.ai</h1>", unsafe_allow_html=True)
@@ -213,19 +231,11 @@ def main():
     elif choice == "Dashboard":
         try:
             st.header("Dashboard")
-           
-            # html_temp_about1 = """
-            # <div style="background-color:#36454F;padding:30px">
-            #     <h4 style="color:white;">
-            #         This app predicts facial emotion using a Convolutional neural network.
-            #         Which is built using Keras and Tensorflow libraries.
-            #         Face detection is achieved through face_recognition library.
-            #     </h4>
-            # </div>
-            # <br/>"""
             table_names = [table[0] for table in tables]
             selected_table = st.selectbox("Select Class ", table_names)
             if st.button("Derive Analytics",use_container_width=True):
+                plot_bytes = derive_graph( selected_table,cur)
+                st.image(plot_bytes)
                 data_map=analytics.derive_analytics(selected_table,cur)
                 if not bool(data_map)==True:
                     st.write("No data recorded !")
@@ -233,33 +243,65 @@ def main():
                     print(selected_table,":",data_map)
                     # Display class data
                     st.header("Class Data")
-                    st.write(f"Total Students: {data_map['class_data']['total_students']}")
-                    st.write("Emotions Percentages:")
-                    for emotion, percentage in data_map['class_data']['emotions_percentages'].items():
-                        st.write(f"{emotion}: {percentage}%")
-                    st.write(f"Prominent Class Emotion: {data_map['class_data']['prominent_class_emotion']}")
-                    st.write(f"Comprehension Score: {data_map['class_data']['comprehension_score']}%")
-                    st.write(f"Average Comprehension Score: {data_map['class_data']['avg_comprehension_score']}%")
-                    st.write(f"Average Incomprehension Score: {data_map['class_data']['avg_incomprehension_score']}%")
-
-                    # Display student data
-                    st.header("Student Reports")
-                    for student_report in data_map['student_reports']:
-                        st.subheader(f"Student: {student_report['student']}")
-                        
-                        # Emotions pie chart
-                        st.write("Emotions Percentage:")
-                        labels = student_report['emotions_percentage'].keys()
-                        sizes = student_report['emotions_percentage'].values()
+                    html_temp_d1 = """<hr>"""
+                    st.markdown(html_temp_d1, unsafe_allow_html=True)
+                    col1, col2 = st.columns([1, 1])
+                    with col1:
+                        st.subheader("Emotions Percentages:")
+                        labels = list(data_map['class_data']['emotions_percentages'].keys())
+                        sizes = list(data_map['class_data']['emotions_percentages'].values())
                         fig1, ax1 = plt.subplots()
                         ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
                         ax1.axis('equal')
                         st.pyplot(fig1)
+                    with col2:
+                        st.write("Class Data:")
+                        prominent_emotion = data_map['class_data']['prominent_class_emotion']
+                        prominent_emoji = emoji_mapping.get(prominent_emotion, '')
+                        st.write(f"Total Students: {data_map['class_data']['total_students']}")
+                        st.write(f"Prominent Emotion: {prominent_emotion} {prominent_emoji}")
+                        st.write(f"Avg Comprehension Score: {round(data_map['class_data']['avg_comprehension_score'],2)}%")
+                        st.write(f"Avg Incomprehension Score: {round(data_map['class_data']['avg_incomprehension_score'],2)}%")
+
+                    # st.write(f"Total Students: {data_map['class_data']['total_students']}")
+                    # st.write("Emotions Percentages:")
+                    # for emotion, percentage in data_map['class_data']['emotions_percentages'].items():
+                    #     st.write(f"{emotion}: {percentage}%")
+                    # st.write(f"Prominent Class Emotion: {data_map['class_data']['prominent_class_emotion']}")
+                    # st.write(f"Comprehension Score: {data_map['class_data']['comprehension_score']}%")
+                    # st.write(f"Average Comprehension Score: {data_map['class_data']['avg_comprehension_score']}%")
+                    # st.write(f"Average Incomprehension Score: {data_map['class_data']['avg_incomprehension_score']}%")
+
+                    # Display student data
+                    st.markdown(html_temp_d1, unsafe_allow_html=True)
+                    st.header("Student Reports")
+                    st.markdown(html_temp_d1, unsafe_allow_html=True)
+
+
+                    for student_report in data_map['student_reports']:
+                        cl1, cl2 = st.columns([1, 1])
+                        
+                        # Emotions pie chart
+                        with cl1:
+                            st.subheader("Emotions Percentage:")
+                            labels = student_report['emotions_percentage'].keys()
+                            sizes = student_report['emotions_percentage'].values()
+                            fig1, ax1 = plt.subplots()
+                            ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+                            ax1.axis('equal')
+                            st.pyplot(fig1)
                         
                         # Other data
-                        st.write(f"Prominent Emotion: {student_report['prominent_emotion']}")
-                        st.write(f"Understanding: {student_report['understanding']}%")
-                        st.write(f"Not Understanding: {student_report['not_understanding']}%")
+                        with cl2:
+                            st.subheader(f"Student: {student_report['student']}")
+                            prominent_emotion = data_map['class_data']['prominent_class_emotion']
+                            prominent_emoji = emoji_mapping.get(prominent_emotion, '')
+                            st.write(f"Prominent Emotion: {prominent_emotion} {prominent_emoji}")
+                            st.write(f"Understanding: {round(student_report['understanding'],2)}%")
+                            st.write(f"Not Understanding: {round(student_report['not_understanding'],2)}%")
+                        
+                        st.markdown(html_temp_d1, unsafe_allow_html=True)
+
 
 
         except Exception as e:
