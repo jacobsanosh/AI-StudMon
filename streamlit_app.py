@@ -6,6 +6,7 @@ import os
 from keras.models import load_model
 import streamlit as st
 from PIL import Image, ImageDraw
+import matplotlib.pyplot as plt
 import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
@@ -91,7 +92,8 @@ def insert_data_into_table(table_name, student_name, emotion, timestamp):
 
 
 def main():
-
+    st.set_page_config(layout="wide")
+    tables = dashboard.dashboard(cur)
     # Face Analysis Application
     st.markdown("<h1 style='text-align: center; color: white; line-height: 0.5;'>🤖</h1>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; color: orange;  line-height: 0;'>Studmon.ai</h1>", unsafe_allow_html=True)
@@ -211,22 +213,55 @@ def main():
     elif choice == "Dashboard":
         try:
             st.header("Dashboard")
-            html_temp_about1 = """
-            <div style="background-color:#36454F;padding:30px">
-                <h4 style="color:white;">
-                    This app predicts facial emotion using a Convolutional neural network.
-                    Which is built using Keras and Tensorflow libraries.
-                    Face detection is achieved through face_recognition library.
-                </h4>
-            </div>
-            <br/>"""
-            tables = dashboard.dashboard(cur)
-            for table in tables:
-                st.write(table[0])  # Display table name
-                # Button to derive analytics for the current table
-                if st.button(f"Derive Analytics for {table[0]}"):
-                    analytics.derive_analytics(table[0])
-            st.markdown(html_temp_about1, unsafe_allow_html=True)
+           
+            # html_temp_about1 = """
+            # <div style="background-color:#36454F;padding:30px">
+            #     <h4 style="color:white;">
+            #         This app predicts facial emotion using a Convolutional neural network.
+            #         Which is built using Keras and Tensorflow libraries.
+            #         Face detection is achieved through face_recognition library.
+            #     </h4>
+            # </div>
+            # <br/>"""
+            table_names = [table[0] for table in tables]
+            selected_table = st.selectbox("Select Class ", table_names)
+            if st.button("Derive Analytics",use_container_width=True):
+                data_map=analytics.derive_analytics(selected_table,cur)
+                if not bool(data_map)==True:
+                    st.write("No data recorded !")
+                else:
+                    print(selected_table,":",data_map)
+                    # Display class data
+                    st.header("Class Data")
+                    st.write(f"Total Students: {data_map['class_data']['total_students']}")
+                    st.write("Emotions Percentages:")
+                    for emotion, percentage in data_map['class_data']['emotions_percentages'].items():
+                        st.write(f"{emotion}: {percentage}%")
+                    st.write(f"Prominent Class Emotion: {data_map['class_data']['prominent_class_emotion']}")
+                    st.write(f"Comprehension Score: {data_map['class_data']['comprehension_score']}%")
+                    st.write(f"Average Comprehension Score: {data_map['class_data']['avg_comprehension_score']}%")
+                    st.write(f"Average Incomprehension Score: {data_map['class_data']['avg_incomprehension_score']}%")
+
+                    # Display student data
+                    st.header("Student Reports")
+                    for student_report in data_map['student_reports']:
+                        st.subheader(f"Student: {student_report['student']}")
+                        
+                        # Emotions pie chart
+                        st.write("Emotions Percentage:")
+                        labels = student_report['emotions_percentage'].keys()
+                        sizes = student_report['emotions_percentage'].values()
+                        fig1, ax1 = plt.subplots()
+                        ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+                        ax1.axis('equal')
+                        st.pyplot(fig1)
+                        
+                        # Other data
+                        st.write(f"Prominent Emotion: {student_report['prominent_emotion']}")
+                        st.write(f"Understanding: {student_report['understanding']}%")
+                        st.write(f"Not Understanding: {student_report['not_understanding']}%")
+
+
         except Exception as e:
             st.error(f"Error occurred: {e}")
 

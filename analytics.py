@@ -1,11 +1,11 @@
-import db_connect
+# import db_connect
 from collections import Counter
 from datetime import datetime, timedelta
-connection = db_connect.connect_to_supabase()
-cur = connection[0]
-conn = connection[1]
+# connection = db_connect.connect_to_supabase()
+# cur = connection[0]
+# conn = connection[1]
 
-def derive_analytics(tabname):
+def derive_analytics(tabname,cur):
     try:
         # Execute SQL query to fetch data from the database within the specified time interval
         query = f"SELECT student_name, emotion FROM {tabname}"
@@ -18,6 +18,10 @@ def derive_analytics(tabname):
         total_students = 0
         student_reports = {}
 
+        if len(rows)==0:
+            print("No Emotions Detected , Empty table!!!")
+            return()
+            
         # Process the fetched data
         for student, emotion in rows:
             if student != 'Unknown':
@@ -38,6 +42,8 @@ def derive_analytics(tabname):
         count_of_understoods=0
         comp_level_list=[]
         non_comp_level_list=[]
+        if not bool(student_reports):
+            return()
         for student, report in student_reports.items():
             #calculating comprehention percentage
             report['understanding']=(report['understanding']/report['total_emotions'])*100
