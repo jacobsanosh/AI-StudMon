@@ -11,6 +11,17 @@ import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
 import groupEmotion,dashboard,analytics
+
+from supabase_py import create_client
+from graph import derive_graph
+
+# Create a Supabase client
+supabase_url = "https://cmjrimwbnzszaozkkcam.supabase.co"
+supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtanJpbXdibnpzemFvemtrY2FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM4MDQzMTMsImV4cCI6MjAyOTM4MDMxM30.rfkhuoLt3d_zr2xUaDXZ3k9uCPutT-mIAaJUD3E565k"
+supabase = create_client(supabase_url, supabase_key)
+
+
+
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
@@ -223,6 +234,8 @@ def main():
             table_names = [table[0] for table in tables]
             selected_table = st.selectbox("Select Class ", table_names)
             if st.button("Derive Analytics",use_container_width=True):
+                plot_bytes = derive_graph( selected_table,cur)
+                st.image(plot_bytes)
                 data_map=analytics.derive_analytics(selected_table,cur)
                 if not bool(data_map)==True:
                     st.write("No data recorded !")
