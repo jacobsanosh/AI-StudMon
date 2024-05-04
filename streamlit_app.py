@@ -5,33 +5,40 @@ import face_recognition
 import os
 from keras.models import load_model
 import streamlit as st
-from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 import db_connect
 from keras.preprocessing.image import img_to_array
 from datetime import datetime, timedelta
 import groupEmotion,dashboard,analytics
-
-from supabase_py import create_client
 from graph import derive_graph
+import atexit
 
-# Create a Supabase client
-supabase_url = "https://cmjrimwbnzszaozkkcam.supabase.co"
-supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtanJpbXdibnpzemFvemtrY2FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM4MDQzMTMsImV4cCI6MjAyOTM4MDMxM30.rfkhuoLt3d_zr2xUaDXZ3k9uCPutT-mIAaJUD3E565k"
-supabase = create_client(supabase_url, supabase_key)
-
-
-
+classifier = None
+cur= None
+conn = None
+connection = None
 # Define the emotions
 emotion_labels = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise']
 
 # Load model
-classifier = load_model('model_78.h5')
-classifier.load_weights("model_weights_78.h5")
+@st.cache_data
+def loadmodel():
+  global classifier
+  classifier = load_model('model_78.h5')
+  classifier.load_weights("model_weights_78.h5")
+
+  print("loading model successfull")
+  st.session_state['classifier'] = classifier
+
+@st.cache_data
+def connecttodb():  
 #connect to db
-connection=db_connect.connect_to_supabase()
-cur=connection[0]
-conn=connection[1]
+  global cur, conn, connection
+  connection=db_connect.connect_to_supabase()
+  cur=connection[0]
+  conn=connection[1]
+  st.session_state['cur'] = cur
+  st.session_state['conn'] = conn
 # Load face using OpenCV
 try:
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -81,7 +88,7 @@ def facerec(frame):
     return name
 
     
-def create_table_if_not_exists(table_name):
+def create_table_if_not_exists(table_name,cur,conn):
     query = f"CREATE TABLE IF NOT EXISTS {table_name} (student_name varchar(20), emotion varchar(20), timestamp timestamp)"
     try:
         cur.execute(query)
@@ -91,12 +98,12 @@ def create_table_if_not_exists(table_name):
     except Exception as e:
         print("Error:", e)
     
-def insert_data_into_table(table_name, student_name, emotion, timestamp):
+def insert_data_into_table(table_name, student_name, emotion, timestamp,cur,conn):
     query = f"INSERT INTO {table_name} (student_name, emotion, timestamp) VALUES ('{student_name}', '{emotion}', '{timestamp}')"
     try:
         cur.execute(query)
         conn.commit()
-        print("Table created successfully.")
+        print("Data inserted successfully.")
 
     except Exception as e:
         print("Error:", e)
@@ -104,7 +111,8 @@ def insert_data_into_table(table_name, student_name, emotion, timestamp):
 
 def main():
     st.set_page_config(layout="wide")
-    tables = dashboard.dashboard(cur)
+    loadmodel()
+    connecttodb()
     emoji_mapping = {
         'Happy': '😊',
         'Neutral': '😐',
@@ -145,7 +153,6 @@ def main():
         # * Get ready with all the emotions you can express. 
         # ''')
 
-
         css = """
             <style>
             .stButton>button {
@@ -173,8 +180,11 @@ def main():
         
         if st.button("🔴 Start Class", use_container_width=True):
         # Initialize OpenCV video capture
+          classifier= st.session_state['classifier']
+          cur = st.session_state['cur']
+          conn = st.session_state['conn']
           table_name = "class_" + datetime.now().strftime("%Y%m%d_%H%M%S")
-          create_table_if_not_exists(table_name)
+          create_table_if_not_exists(table_name,cur,conn)
           cap = cv2.VideoCapture(0)
           start_time = datetime.now()
           procssingTime=start_time
@@ -211,7 +221,7 @@ def main():
                     
                     for data in faces_data:
                         name, output, timestamp = data
-                        insert_data_into_table(table_name, name, output, timestamp)
+                        insert_data_into_table(table_name, name, output, timestamp,cur,conn)
                         faces_data=[]    
                     start_time=datetime.now()
                 #for processing
@@ -230,7 +240,9 @@ def main():
  # Dashboard
     elif choice == "Dashboard":
         try:
+            cur = st.session_state['cur']
             st.header("Dashboard")
+            tables = dashboard.dashboard(cur)
             table_names = [table[0] for table in tables]
             selected_table = st.selectbox("Select Class ", table_names)
             if st.button("Derive Analytics",use_container_width=True):
@@ -341,9 +353,11 @@ def main():
             st.markdown(f"<li style='color: white;'>{feature}</li>", unsafe_allow_html=True)
         st.markdown("</ul><br/><hr/>", unsafe_allow_html=True)
 
-
+@atexit.register
+def close_connection():
+    if connection:
+        cur.close()
+        conn.close()
 if __name__ == "__main__":
     main()
-    if connection:
-         cur.close()
-         conn.close()  
+ 

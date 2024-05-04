@@ -1,6 +1,6 @@
 # analytics.py
 
-from supabase_py import create_client
+# from supabase_py import create_client
 import matplotlib.pyplot as plt
 import io
 
