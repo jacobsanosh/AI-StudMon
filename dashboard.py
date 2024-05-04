@@ -1,3 +1,4 @@
+import streamlit as st
 def dashboard(cur):
     try:
         print("hi")
