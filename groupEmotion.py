@@ -56,7 +56,7 @@ def processingEmotion(cur,tname,end_time):
             else:
                 res= 1
             res="understood" if res==1 else "not understood"
-            print(res)
+            return res
     except Exception as e:
         print("Error fetching data:", e)
 

@@ -189,6 +189,7 @@ def main():
           start_time = datetime.now()
           procssingTime=start_time
           faces_data=[]
+          group_emotion_placeholder = st.empty()
           while cap.isOpened():
             success, frame = cap.read()
             if not success:
@@ -225,9 +226,11 @@ def main():
                         faces_data=[]    
                     start_time=datetime.now()
                 #for processing
+                
                 if (datetime.now() - procssingTime).seconds >= 45:
-                    groupEmotion.processingEmotion(cur,table_name,datetime.now())
+                    result=groupEmotion.processingEmotion(cur,table_name,datetime.now())
                     procssingTime=datetime.now()
+                    group_emotion_placeholder.write(f"Group Emotion Processing Result: {result}")
                 
             cv2.imshow('Face Detection, Emotion Detection, and Recognition', frame)
             if cv2.waitKey(5) & 0xFF == 27:
