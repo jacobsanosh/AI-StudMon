@@ -1,6 +1,6 @@
-# import db_connect
 import collections
 from datetime import datetime, timedelta
+# import db_connect
 # connection = db_connect.connect_to_supabase()
 # cur = connection[0]
 # conn = connection[1]
@@ -26,7 +26,7 @@ def processingEmotion(cur,tname,end_time):
             else:
                 student[row[0]].append(-1)
         
-        print(student)
+        print("here is the students",student)
         majority_emotion = {}
         for name, emotions in student.items():
             count_1 = emotions.count(1)
@@ -40,7 +40,7 @@ def processingEmotion(cur,tname,end_time):
         
         print(majority_emotion)
         if not majority_emotion:
-            print("No data found most of them are unknown students.")
+            return "No data found most of them are unknown students."
         else: 
             count_1,count_minus_1=0,0
             for name, emotion in majority_emotion.items():
@@ -56,6 +56,7 @@ def processingEmotion(cur,tname,end_time):
             else:
                 res= 1
             res="understood" if res==1 else "not understood"
+            print("the group emotion is",res);
             return res
     except Exception as e:
         print("Error fetching data:", e)
@@ -66,6 +67,6 @@ def processingEmotion(cur,tname,end_time):
 # end_time = datetime.strptime("2024-04-26 9:21:00", "%Y-%m-%d %H:%M:%S")
 # print(end_time)
 # processingEmotion("class_20240426_091949",end_time)
-# end_time = datetime.strptime("2024-04-26 15:43:00", "%Y-%m-%d %H:%M:%S")
+# end_time = datetime.strptime("2024-05-05 19:00:00", "%Y-%m-%d %H:%M:%S")
 # print(end_time)
-# processingEmotion("class_20240426_154218",end_time)
+# processingEmotion(cur,"class_20240505_181712",end_time)
